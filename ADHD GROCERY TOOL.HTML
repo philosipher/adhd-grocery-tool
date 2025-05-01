@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philo Siphers ADHD Grocery Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            background: linear-gradient(135deg, #e6f0fa 0%, #d4f5e8 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #004aad;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+        .info, .custom-request, .category {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.8s ease-out;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .item:hover {
+            transform: scale(1.02);
+            background-color: #e6f0fa;
+        }
+        .item input[type="checkbox"] {
+            margin-right: 15px;
+        }
+        .item a {
+            color: #004aad;
+            text-decoration: none;
+            margin-left: 10px;
+            transition: color 0.3s ease;
+        }
+        .item a:hover {
+            color: #003087;
+            text-decoration: underline;
+        }
+        .copy-text {
+            font-style: italic;
+            color: #666;
+            margin-left: 10px;
+        }
+        #progress {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #004aad;
+        }
+        button {
+            background-color: #004aad;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: #003087;
+            transform: scale(1.05);
+        }
+        .custom-request form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .custom-request label {
+            font-weight: bold;
+            color: #004aad;
+        }
+        .custom-request input, .custom-request select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .custom-request button {
+            width: 200px;
+        }
+        #customListOutput, #mealPlanOutput {
+            margin-top: 20px;
+        }
+        .custom-list-item {
+            margin-bottom: 15px;
+        }
+        .add-item-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Philo Siphers ADHD Grocery Tool</h1>
+    <p id="progress">Progress: 0/0 items added</p>
+
+    <div class="info">
+        <h2>Important: Log In First</h2>
+        <p><strong>Before using the "Add to Basket" links, log into your selected store account:</strong></p>
+        <ol>
+            <li>Go to the store’s website (e.g., <a href="https://www.iceland.co.uk" target="_blank">www.iceland.co.uk</a> for Iceland).</li>
+            <li>Sign in with your email and password, and enter any required verification code.</li>
+            <li>Keep the store tab open while using this tool.</li>
+        </ol>
+        <p>This ensures the links work and your basket saves. If a link fails, use the search term provided to find the item manually.</p>
+    </div>
+
+    <div class="custom-request">
+        <h2>Create Your Shopping List</h2>
+        <p>Enter your budget, store, and duration to generate a shopping list and meal plan. Note: Prices are estimates based on store averages and may vary. Verify prices on the store’s website.</p>
+        <form id="customListForm">
+            <label for="budget">Budget (£):</label>
+            <input type="number" id="budget" name="budget" min="10" max="500" placeholder="e.g., 150" required>
+
+            <label for="store">Shopping Place:</label>
+            <select id="store" name="store" required>
+                <option value="Iceland UK">Iceland UK</option>
+                <option value="Tesco">Tesco</option>
+                <option value="Asda">Asda</option>
+                <option value="Sainsbury’s">Sainsbury’s</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="duration">Duration:</label>
+            <select id="duration" name="duration" required>
+                <option value="1">1 Week</option>
+                <option value="2">2 Weeks</option>
+                <option value="3">3 Weeks</option>
+                <option value="4">4 Weeks</option>
+            </select>
+
+            <label for="familySize">Family Size:</label>
+            <select id="familySize" name="familySize" required>
+                <option value="1">1 Person</option>
+                <option value="2">2 People</option>
+                <option value="3-4">3-4 People</option>
+                <option value="5+">5+ People</option>
+            </select>
+
+            <button type="submit">Generate Shopping List & Meal Plan</button>
+        </form>
+
+        <h3>Add Your Own Item</h3>
+        <form id="addItemForm" class="add-item-form">
+            <label for="customItemName">Item Name:</label>
+            <input type="text" id="customItemName" name="customItemName" placeholder="e.g., Bananas" required>
+
+            <label for="customItemPrice">Price (£):</label>
+            <input type="number" id="customItemPrice" name="customItemPrice" min="0.1" step="0.01" placeholder="e.g., 1.20" required>
+
+            <label for="customItemCategory">Category:</label>
+            <select id="customItemCategory" name="customItemCategory" required>
+                <option value="Pantry">Pantry</option>
+                <option value="Frozen">Frozen</option>
+                <option value="Fresh/Chilled">Fresh/Chilled</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button type="submit">Add Item</button>
+        </form>
+
+        <div id="customListOutput"></div>
+        <div id="mealPlanOutput"></div>
+        <button id="exportButton" style="display: none;" onclick="exportList()">Export List as Text</button>
+    </div>
+
+    <script>
+        // Store-specific search URL mappings
+        const storeSearchURLs = {
+            "Iceland UK": "https://www.iceland.co.uk/search?q=",
+            "Tesco": "https://www.tesco.com/groceries/en-GB/search?query=",
+            "Asda": "https://groceries.asda.com/search/",
+            "Sainsbury’s": "https://www.sainsburys.co.uk/shop/SearchDisplayView?searchTerm=",
+            "Other": "https://www.google.com/search?q="
+        };
+
+        // Base product data (generic, adjusted by store)
+        const baseProducts = [
+            { name: "Pasta Shapes (500g)", basePrice: 0.88, search: "Pasta Shapes 500g", category: "Pantry", recipe: "Spaghetti Bolognese" },
+            { name: "Long Grain Rice (1kg)", basePrice: 1.76, search: "Long Grain Rice 1kg", category: "Pantry", recipe: "Chicken Stir-Fry" },
+            { name: "Chopped Tomatoes (400g)", basePrice: 0.83, search: "Chopped Tomatoes 400g", category: "Pantry", recipe: "Spaghetti Bolognese" },
+            { name: "Baked Beans (4 x 410g)", basePrice: 3.47, search: "Baked Beans 4 x 410g", category: "Pantry", recipe: "Beans on Toast" },
+            { name: "Soft Tortillas (8-pack, 320g)", basePrice: 1.32, search: "Soft Tortillas 8 pack 320g", category: "Pantry", recipe: "Taco Night" },
+            { name: "Taco Seasoning (30g)", basePrice: 1.10, search: "Taco Seasoning 30g", category: "Pantry", recipe: "Taco Night" },
+            { name: "White Sliced Bread (800g)", basePrice: 1.16, search: "White Sliced Bread 800g", category: "Pantry", recipe: "Beans on Toast" },
+            { name: "Vegetable Oil (1L)", basePrice: 2.04, search: "Vegetable Oil 1L", category: "Pantry", recipe: "Spaghetti Bolognese, Chicken Stir-Fry" },
+            { name: "Mixed Herbs (10g)", basePrice: 1.16, search: "Mixed Herbs 10g", category: "Pantry", recipe: "Spaghetti Bolognese, Chicken Stir-Fry" },
+            { name: "Peanut Butter (340g)", basePrice: 1.65, search: "Peanut Butter 340g", category: "Pantry", recipe: "Peanut Butter Sandwiches" },
+            { name: "Mixed Vegetables (900g)", basePrice: 1.16, search: "Mixed Vegetables 900g", category: "Frozen", recipe: "Chicken Stir-Fry" },
+            { name: "Garden Peas (800g)", basePrice: 1.16, search: "Garden Peas 800g", category: "Frozen", recipe: "Sausage and Mash" },
+            { name: "Straight Cut Chips (1.5kg)", basePrice: 2.31, search: "Straight Cut Chips 1.5kg", category: "Frozen", recipe: "Chicken and Chips" },
+            { name: "Beef Mince (500g)", basePrice: 3.47, search: "Beef Mince 500g", category: "Frozen", recipe: "Spaghetti Bolognese" },
+            { name: "Chicken Breast Fillets (1kg)", basePrice: 6.93, search: "Chicken Breast Fillets 1kg", category: "Frozen", recipe: "Chicken Stir-Fry" },
+            { name: "Pork Sausages (12-pack, 456g)", basePrice: 2.31, search: "Pork Sausages 12 pack 456g", category: "Frozen", recipe: "Sausage and Mash" },
+            { name: "Mini Pizza Bases (4-pack, 300g)", basePrice: 2.20, search: "Mini Pizza Bases 4 pack 300g", category: "Frozen", recipe: "Build-Your-Own Pizza" },
+            { name: "Veggie Nuggets (400g)", basePrice: 2.75, search: "Veggie Nuggets 400g", category: "Frozen", recipe: "Veggie Nuggets and Chips" },
+            { name: "Eggs (15-pack)", basePrice: 2.92, search: "Eggs 15 pack", category: "Fresh/Chilled", recipe: "Scrambled Eggs on Toast" },
+            { name: "Extra Mature Cheddar Cheese (400g)", basePrice: 3.69, search: "Extra Mature Cheddar 400g", category: "Fresh/Chilled", recipe: "Cheese Sandwiches" },
+            { name: "Semi Skimmed Milk (2L)", basePrice: 1.65, search: "Semi Skimmed Milk 2L", category: "Fresh/Chilled", recipe: "Scrambled Eggs on Toast" },
+            { name: "Onions (1kg)", basePrice: 1.16, search: "Onions 1kg", category: "Fresh/Chilled", recipe: "Spaghetti Bolognese, Chicken Stir-Fry" },
+            { name: "Potatoes (2.5kg)", basePrice: 2.31, search: "Potatoes 2.5kg", category: "Fresh/Chilled", recipe: "Sausage and Mash" },
+            { name: "Carrots (1kg)", basePrice: 0.88, search: "Carrots 1kg", category: "Fresh/Chilled", recipe: "Cheese and Carrot Sticks" },
+            { name: "Apples (6-pack, 900g)", basePrice: 1.98, search: "Apples 6 pack 900g", category: "Fresh/Chilled", recipe: "Yogurt Tubes and Apples" },
+            { name: "Yogurt Tubes (8-pack, 320g)", basePrice: 1.65, search: "Yogurt Tubes 8 pack 320g", category: "Snacks", recipe: "Yogurt Tubes and Apples" },
+            { name: "Digestive Biscuits (400g)", basePrice: 1.10, search: "Digestive Biscuits 400g", category: "Snacks", recipe: "Yogurt Tubes and Biscuits" },
+            { name: "Multipack Crisps (6-pack, 150g)", basePrice: 1.65, search: "Multipack Crisps 6 pack 150g", category: "Snacks", recipe: "Cheese Sandwiches with Crisps" },
+            { name: "Chocolate Bars (4-pack, 160g)", basePrice: 1.32, search: "Chocolate Bars 4 pack 160g", category: "Snacks", recipe: "Treat" },
+            { name: "Tomato Ketchup (550g)", basePrice: 1.16, search: "Tomato Ketchup 550g", category: "Other", recipe: "Cheese Sandwiches with Crisps" },
+            { name: "Strawberry Jam (454g)", basePrice: 1.16, search: "Strawberry Jam 454g", category: "Other", recipe: "Toast with Jam" },
+            { name: "Tea Bags (80-pack)", basePrice: 1.76, search: "Tea Bags 80 pack", category: "Other", recipe: "Tea" },
+            { name: "Granulated Sugar (1kg)", basePrice: 1.76, search: "Granulated Sugar 1kg", category: "Other", recipe: "Tea" },
+            { name: "Fruit Squash (1.5L)", basePrice: 1.65, search: "Fruit Squash 1.5L", category: "Other", recipe: "Drink" },
+            { name: "Toilet Roll (9-pack)", basePrice: 3.85, search: "Toilet Roll 9 pack", category: "Other", recipe: "Household" }
+        ];
+
+        // Recipes for meal planning
+        const recipes = {
+            "Spaghetti Bolognese": "Fry 500g beef mince with 1 onion in 1 tbsp oil until browned. Add 1 tin chopped tomatoes and 1 tsp mixed herbs, simmer 10 min. Cook 400g pasta, serve with sauce. (Serves 3-4, ~£4.50)",
+            "Chicken Stir-Fry": "Cook 400g rice. Fry 500g chicken breast with 1 onion and 300g mixed vegetables in 1 tbsp oil, season with 1 tsp mixed herbs. Serve over rice. (Serves 3-4, ~£5.50)",
+            "Beans on Toast": "Heat 1 pack baked beans (410g). Toast 8 slices white bread, serve beans on top. (Serves 3-4, ~£1.80)",
+            "Taco Night": "Fry 500g beef mince with 1 onion, add 1 taco seasoning pack. Warm 8 tortillas, serve with mince and 100g cheddar cheese. (Serves 3-4, ~£4.80)",
+            "Sausage and Mash": "Boil 1kg potatoes, mash with milk. Bake 12 sausages, boil 200g peas. Serve together. (Serves 3-4, ~£4.00)",
+            "Build-Your-Own Pizza": "Spread 2 tins chopped tomatoes on 4 mini pizza bases, sprinkle with 200g cheddar cheese and 1 tsp mixed herbs. Bake at 200°C for 15 min. (Serves 3-4, ~£5.00)",
+            "Chicken and Chips": "Bake 500g chicken breast and 500g chips at 200°C for 25 min. Boil 200g mixed vegetables, serve together. (Serves 3-4, ~£5.00)",
+            "Pasta Bake": "Cook 400g pasta. Mix with 1 tin chopped tomatoes and 1 tsp mixed herbs, top with 200g cheddar cheese. Bake at 180°C for 20 min. (Serves 3-4, ~£4.50)",
+            "Scrambled Eggs on Toast": "Whisk 6 eggs with a splash of milk. Heat 1 tbsp oil in a pan, cook eggs until set. Toast 4 slices white bread, serve eggs on top. (Serves 3-4, ~£1.50)",
+            "Cheese Sandwiches": "Make cheese sandwiches with 8 slices white bread and 200g cheddar cheese. (Serves 3-4, ~£2.00)",
+            "Cheese Sandwiches with Crisps": "Make cheese sandwiches with 8 slices white bread and 200g cheddar cheese, serve with 1 pack crisps. (Serves 3-4, ~£3.00)",
+            "Cheese and Carrot Sticks": "Serve 200g cheddar cheese (cubed) with 500g carrots (sticks). (Serves 3-4, ~£2.50)",
+            "Peanut Butter Sandwiches": "Spread 4 tbsp peanut butter on 8 slices white bread, make sandwiches. (Serves 3-4, ~£1.50)",
+            "Yogurt Tubes and Apples": "Serve 4 yogurt tubes with 2 sliced apples. (Serves 3-4, ~£2.00)",
+            "Yogurt Tubes and Biscuits": "Serve 4 yogurt tubes with 8 digestive biscuits. (Serves 3-4, ~£2.00)",
+            "Toast with Jam": "Toast 8 slices white bread, spread with 4 tbsp jam. (Serves 3-4, ~£1.20)",
+            "Veggie Nuggets and Chips": "Bake 400g veggie nuggets and 500g chips at 200°C for 20 min. (Serves 3-4, ~£3.50)",
+            "Tea": "Boil water, add 1 teabag and 1 tsp sugar. Add milk to taste. (Serves 1, ~£0.05)",
+            "Treat": "Enjoy a chocolate bar as a treat. (Serves 1, ~£0.30)",
+            "Drink": "Mix fruit squash with water for a refreshing drink. (Serves 3-4, ~£0.50)",
+            "Household": "Toilet roll for household use."
+        };
+
+        let shoppingList = [];
+        let totalItems = 0;
+
+        function updateProgress() {
+            const checkedCount = shoppingList.filter(item => item.checked).length;
+            document.getElementById('progress').textContent = `Progress: ${checkedCount}/${totalItems} items added`;
+        }
+
+        document.getElementById('customListForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log("Form submitted");
+
+            const budget = parseFloat(document.getElementById('budget').value);
+            const store = document.getElementById('store').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const familySize = document.getElementById('familySize').value;
+
+            if (!budget || budget < 10 || budget > 500 || isNaN(duration) || !store || !familySize) {
+                alert("Please fill in all fields with valid values (budget: £10-£500, valid duration and store).");
+                return;
+            }
+
+            console.log(`Budget: ${budget}, Store: ${store}, Duration: ${duration}, Family Size: ${familySize}`);
+
+            // Adjust quantities based on family size
+            let familyMultiplier = 1;
+            if (familySize === "1") familyMultiplier = 0.5;
+            else if (familySize === "2") familyMultiplier = 0.75;
+            else if (familySize === "3-4") familyMultiplier = 1;
+            else if (familySize === "5+") familyMultiplier = 1.5;
+
+            // Calculate weekly budget and scale quantities
+            const weeklyBudget = budget / duration;
+            const weeklyMeals = 21 * familyMultiplier; // 3 meals/day x 7 days, adjusted for family size
+            const mealCost = weeklyBudget / weeklyMeals; // Target cost per meal
+            let totalCost = 0;
+            shoppingList = [];
+
+            console.log(`Weekly Budget: ${weeklyBudget}, Weekly Meals: ${weeklyMeals}, Meal Cost: ${mealCost}`);
+
+            // Adjust products based on selected store
+            const products = baseProducts.map(item => {
+                let priceAdjustment = 1;
+                if (store !== "Iceland UK") {
+                    priceAdjustment = 1.1 + (Math.random() * 0.2 - 0.1); // Random variation ±10% for other stores
+                }
+                const adjustedPrice = item.basePrice * priceAdjustment;
+                return {
+                    ...item,
+                    price: adjustedPrice,
+                    url: storeSearchURLs[store] + encodeURIComponent(item.search),
+                    search: item.search
+                };
+            });
+
+            // Select items based on budget, duration, and family size
+            products.forEach(item => {
+                let baseQuantity = 0;
+                if (item.category === "Pantry" || item.category === "Other") {
+                    baseQuantity = Math.ceil(duration * 0.5); // 1 unit per 2 weeks
+                } else if (item.category === "Frozen") {
+                    baseQuantity = Math.ceil(duration * (item.price < 3 ? 1 : 0.5)); // More for cheap items
+                } else if (item.category === "Fresh/Chilled" || item.category === "Snacks") {
+                    baseQuantity = Math.ceil(duration * (item.price < 2 ? 1 : 0.75)); // Adjust for perishables
+                }
+                let quantity = Math.max(1, Math.round(baseQuantity * familyMultiplier));
+                const itemCost = item.price * quantity;
+
+                console.log(`Item: ${item.name}, Quantity: ${quantity}, Cost: ${itemCost}, Total Cost: ${totalCost}, Budget Limit: ${budget * 0.95}`);
+
+                if (totalCost + itemCost <= budget * 0.95 || shoppingList.length === 0) { // Ensure at least one item
+                    shoppingList.push({ ...item, quantity, total: itemCost, checked: false });
+                    totalCost += itemCost;
+                }
+            });
+
+            console.log(`Shopping List Length: ${shoppingList.length}, Total Cost: ${totalCost}`);
+
+            if (shoppingList.length === 0) {
+                alert("No items could be added within the budget. Please increase your budget or adjust duration/family size.");
+                return;
+            }
+
+            // Generate shopping list output
+            let output = `<h3>Shopping List for ${duration} Week${duration > 1 ? 's' : ''} at ${store} (Family of ${familySize})</h3>`;
+            output += `<p><strong>Estimated Total: £${totalCost.toFixed(2)}</strong> (Prices are estimates; check ${store} for accuracy)</p>`;
+            output += `<p><strong>Notes</strong>: For a more precise list or other stores, ask Grok directly.</p>`;
+
+            const categories = ["Pantry", "Frozen", "Fresh/Chilled", "Snacks", "Other"];
+            categories.forEach(category => {
+                const categoryItems = shoppingList.filter(item => item.category === category);
+                if (categoryItems.length > 0) {
+                    output += `<h4>${category}</h4>`;
+                    categoryItems.forEach((item, index) => {
+                        const globalIndex = shoppingList.indexOf(item);
+                        output += `
+                            <div class="item">
+                                <input type="checkbox" id="item-${globalIndex}" onchange="toggleItem(${globalIndex})" ${item.checked ? 'checked' : ''}>
+                                <span>${item.name} x ${item.quantity} (£${item.total.toFixed(2)})</span>
+                                <a href="${item.url}" target="_blank">Add to Basket</a>
+                                <span class="copy-text">Search: ${item.search}</span>
+                            </div>`;
+                    });
+                }
+            });
+
+            // Generate meal plan
+            const daysPerWeek = 7;
+            const totalDays = duration * daysPerWeek;
+            const mealRecipes = [...new Set(shoppingList.map(item => item.recipe).filter(r => r))];
+            let mealPlanOutput = `<h3>Meal Plan for ${duration} Week${duration > 1 ? 's' : ''}</h3>`;
+            for (let day = 1; day <= totalDays; day++) {
+                const recipeIndex = (day - 1) % mealRecipes.length;
+                const recipe = mealRecipes[recipeIndex];
+                mealPlanOutput += `
+                    <h4>Day ${day}</h4>
+                    <p><strong>${recipe}</strong>: ${recipes[recipe]}</p>`;
+            }
+
+            totalItems = shoppingList.length;
+            updateProgress();
+            document.getElementById('customListOutput').innerHTML = output;
+            document.getElementById('mealPlanOutput').innerHTML = mealPlanOutput;
+            document.getElementById('exportButton').style.display = 'block';
+        });
+
+        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('customItemName').value;
+            const price = parseFloat(document.getElementById('customItemPrice').value);
+            const category = document.getElementById('customItemCategory').value;
+            const store = document.getElementById('store').value;
+
+            if (!name || isNaN(price) || price < 0.1) {
+                alert("Please enter a valid item name and price (minimum £0.10).");
+                return;
+            }
+
+            const newItem = {
+                name,
+                price,
+                url: storeSearchURLs[store] + encodeURIComponent(name),
+                search: name,
+                category,
+                recipe: "Custom Item",
+                quantity: 1,
+                total: price,
+                checked: false
+            };
+
+            shoppingList.push(newItem);
+            totalItems = shoppingList.length;
+
+            // Update shopping list output
+            let output = document.getElementById('customListOutput').innerHTML;
+            const categories = ["Pantry", "Frozen", "Fresh/Chilled", "Snacks", "Other"];
+            let categoryOutput = output.includes(`<h4>${category}</h4>`) ? output.split(`<h4>${category}</h4>`)[1].split('<h4')[0] : '';
+            const globalIndex = shoppingList.length - 1;
+            categoryOutput += `
+                <div class="item">
+                    <input type="checkbox" id="item-${globalIndex}" onchange="toggleItem(${globalIndex})" ${newItem.checked ? 'checked' : ''}>
+                    <span>${newItem.name} x ${newItem.quantity} (£${newItem.total.toFixed(2)})</span>
+                    <a href="${newItem.url}" target="_blank">Add to Basket</a>
+                    <span class="copy-text">Search: ${newItem.search}</span>
+                </div>`;
+
+            if (!output.includes(`<h4>${category}</h4>`)) {
+                output += `<h4>${category}</h4>${categoryOutput}`;
+            } else {
+                output = output.replace(`<h4>${category}</h4>${output.split(`<h4>${category}</h4>`)[1].split('<h4')[0]}`, `<h4>${category}</h4>${categoryOutput}`);
+            }
+
+            document.getElementById('customListOutput').innerHTML = output;
+            updateProgress();
+            this.reset();
+        });
+
+        function toggleItem(index) {
+            shoppingList[index].checked = !shoppingList[index].checked;
+            updateProgress();
+        }
+
+        function exportList() {
+            const listOutput = document.getElementById('customListOutput').innerHTML;
+            const mealPlanOutput = document.getElementById('mealPlanOutput').innerHTML;
+            const blob = new Blob([listOutput, mealPlanOutput], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `grocery-plan-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
